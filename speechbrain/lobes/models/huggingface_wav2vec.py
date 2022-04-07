@@ -100,6 +100,7 @@ class HuggingFaceWav2Vec2(nn.Module):
         freeze=True,
         freeze_feature_extractor=False,
         apply_spec_augment=False,
+        load_pretrained_weights=True,
     ):
         super().__init__()
 
@@ -122,7 +123,7 @@ class HuggingFaceWav2Vec2(nn.Module):
 
         # Download and load the model
         self._from_pretrained(
-            source, config=config, model=model, save_path=save_path
+            source, config=config, model=model, save_path=save_path, load_weights=load_pretrained_weights
         )
 
         # set apply_spec_augment
@@ -146,7 +147,7 @@ class HuggingFaceWav2Vec2(nn.Module):
             if self.freeze_feature_extractor:
                 self.model.feature_extractor._freeze_parameters()
 
-    def _from_pretrained(self, source, config, model, save_path):
+    def _from_pretrained(self, source, config, model, save_path, load_weights):
         """This function manages the source checking and loading of the params.
         # 1. Is the model from HF or a local path
         # 2. Is the model pretrained with HF or SpeechBrain
@@ -154,7 +155,10 @@ class HuggingFaceWav2Vec2(nn.Module):
         """
 
         is_sb, ckpt_file = self._check_model_source(source)
-        if is_sb:
+        if not load_weights:
+            config = config.from_pretrained(source, cache_dir=save_path)
+            self.model = model(config)
+        elif is_sb:
             config = config.from_pretrained(source, cache_dir=save_path)
             self.model = model(config)
             self.model.gradient_checkpointing_disable()  # Required by DDP
@@ -165,7 +169,10 @@ class HuggingFaceWav2Vec2(nn.Module):
             # We transfer the parameters from the checkpoint.
             self._load_sb_pretrained_w2v2_parameters(ckpt_full_path)
         else:
-            self.model = model.from_pretrained(source, cache_dir=save_path)
+            if load_weights:
+                self.model = model.from_pretrained(source, cache_dir=save_path)
+            else:
+                self.model=model()
 
     def _load_sb_pretrained_w2v2_parameters(self, path):
         """Loads the parameter of a w2v2 model pretrained with SpeechBrain and the

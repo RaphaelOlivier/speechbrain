@@ -625,15 +625,20 @@ class S2SBeamSearcher(S2SBaseSearcher):
             if self._check_full_beams(hyps_and_scores, self.beam_size):
                 break
 
-            log_probs, memory, attn = self.forward_step(
-                inp_tokens, memory, enc_states, enc_lens
-            )
+            if self.att_weight>0:
+
+                log_probs, memory, attn = self.forward_step(
+                    inp_tokens, memory, enc_states, enc_lens
+                )
+            else:
+                log_probs = enc_states.new_zeros((batch_size,ctc_outputs.size(-1)))
+                attn = None
             log_probs = self.att_weight * log_probs
 
             # Keep the original value
             log_probs_clone = log_probs.clone().reshape(batch_size, -1)
             vocab_size = log_probs.shape[-1]
-
+            
             if self.using_max_attn_shift:
                 # Block the candidates that exceed the max shift
                 cond, attn_peak = self._check_attn_shift(attn, prev_attn_peak)
@@ -654,14 +659,12 @@ class S2SBeamSearcher(S2SBaseSearcher):
                     cond,
                     fill_value=self.minus_inf,
                 )
-
             # adding LM scores to log_prob if lm_weight > 0
             if self.lm_weight > 0:
                 lm_log_probs, lm_memory = self.lm_forward_step(
                     inp_tokens, lm_memory
                 )
                 log_probs = log_probs + self.lm_weight * lm_log_probs
-
             # adding CTC scores to log_prob if ctc_weight > 0
             if self.ctc_weight > 0:
                 g = alived_seq
@@ -678,8 +681,8 @@ class S2SBeamSearcher(S2SBaseSearcher):
                 ctc_log_probs, ctc_memory = ctc_scorer.forward_step(
                     g, ctc_memory, ctc_candidates, attn
                 )
-                log_probs = log_probs + self.ctc_weight * ctc_log_probs
 
+                log_probs = log_probs + self.ctc_weight * ctc_log_probs
             scores = sequence_scores.unsqueeze(1).expand(-1, vocab_size)
             scores = scores + log_probs
 
@@ -711,7 +714,8 @@ class S2SBeamSearcher(S2SBaseSearcher):
             ).view(batch_size * self.beam_size)
 
             # Permute the memory to synchoronize with the output.
-            memory = self.permute_mem(memory, index=predecessors)
+            if self.att_weight > 0:
+                memory = self.permute_mem(memory, index=predecessors)
             if self.lm_weight > 0:
                 lm_memory = self.permute_lm_mem(lm_memory, index=predecessors)
 

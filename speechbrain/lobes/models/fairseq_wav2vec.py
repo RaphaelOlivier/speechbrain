@@ -89,18 +89,18 @@ class FairseqWav2Vec2(nn.Module):
         # During pretraining dropout might be set to 0. However, we might want
         # to apply dropout when fine-tuning on a downstream task. Hence we need
         # to modify the fairseq cfg to activate dropout (if requested).
-        if not freeze and dropout is not None:
+        if dropout is not None:
             overrides = {
                 "model": {
                     "dropout": dropout,
                     "encoder_layerdrop": dropout,
                     "dropout_input": dropout,
-                    "attention_dropout": dropout,
+                    "attention_dropout": dropout
                 }
             }
         else:
             overrides = {}
-
+        overrides["feature_grad_mult"] = 1.0
         (
             model,
             cfg,
@@ -125,9 +125,9 @@ class FairseqWav2Vec2(nn.Module):
 
         model = model[0]
 
-        if isinstance(model,fairseq.models.wav2vec.Wav2VecCtc): # Full ASR Wav2Vec2 pipeline
+        if isinstance(model, fairseq.models.wav2vec.Wav2VecCtc):  # Full ASR Wav2Vec2 pipeline
             model = model.w2v_encoder.w2v_model
-        
+
         self.model = model
         self.freeze = freeze
         self.output_norm = output_norm
@@ -172,7 +172,8 @@ class FairseqWav2Vec2(nn.Module):
         if self.normalize:
             wav = F.layer_norm(wav, wav.shape)
         # Extract wav2vec output
-        out = self.model.extract_features(wav, padding_mask=None, mask=False)['x']
+        out = self.model.extract_features(
+            wav, padding_mask=None, mask=False)['x']
         # We normalize the output if required
         if self.output_norm:
             out = F.layer_norm(out, out.shape)

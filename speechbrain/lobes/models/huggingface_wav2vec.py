@@ -24,8 +24,8 @@ from speechbrain.pretrained.fetching import fetch
 # We check if transformers is installed.
 try:
     import transformers
-    from transformers import Wav2Vec2Model, HubertModel, WavLMModel
-    from transformers import Wav2Vec2Config, HubertConfig, WavLMConfig
+    from transformers import Wav2Vec2Model, HubertModel, WavLMModel, Data2VecAudioModel
+    from transformers import Wav2Vec2Config, HubertConfig, WavLMConfig, Data2VecAudioConfig
     from transformers import Wav2Vec2FeatureExtractor
     from transformers import Wav2Vec2ForPreTraining
     from transformers.models.wav2vec2.modeling_wav2vec2 import (
@@ -43,12 +43,14 @@ HF_models = {
     "wav2vec2": Wav2Vec2Model,
     "hubert": HubertModel,
     "wavlm": WavLMModel,
+    "data2vec": Data2VecAudioModel
 }
 
 HF_config = {
     "wav2vec2": Wav2Vec2Config,
     "hubert": HubertConfig,
     "wavlm": WavLMConfig,
+    "data2vec": Data2VecAudioConfig
 }
 
 
@@ -117,6 +119,9 @@ class HuggingFaceWav2Vec2(nn.Module):
         elif "wavlm" in source:
             config = HF_config.get("wavlm")
             model = HF_models.get("wavlm")
+        elif "data2vec" in source:
+            config = HF_config.get("data2vec")
+            model = HF_models.get("data2vec")
         else:
             config = HF_config.get("wav2vec2")
             model = HF_models.get("wav2vec2")

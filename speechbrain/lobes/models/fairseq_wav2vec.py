@@ -124,6 +124,10 @@ class FairseqWav2Vec2(nn.Module):
             self.normalize = input_norm
 
         model = model[0]
+
+        if isinstance(model,fairseq.models.wav2vec.Wav2VecCtc): # Full ASR Wav2Vec2 pipeline
+            model = model.w2v_encoder.w2v_model
+        
         self.model = model
         self.freeze = freeze
         self.output_norm = output_norm
@@ -167,14 +171,11 @@ class FairseqWav2Vec2(nn.Module):
         # We normalize the input signal if needed.
         if self.normalize:
             wav = F.layer_norm(wav, wav.shape)
-
         # Extract wav2vec output
-        out = self.model.extract_features(wav, padding_mask=None, mask=False)[0]
-
+        out = self.model.extract_features(wav, padding_mask=None, mask=False)['x']
         # We normalize the output if required
         if self.output_norm:
             out = F.layer_norm(out, out.shape)
-
         return out
 
     def reset_layer(self, model):

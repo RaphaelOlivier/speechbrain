@@ -136,7 +136,7 @@ class Pretrainer:
             # Interpret as path to file in current directory.
             return "./", path
 
-    def collect_files(self, default_source=None):
+    def collect_files(self, default_source=None, overwrite=False):
         """Fetches parameters from known paths with fallback default_source
 
         The actual parameter files may reside elsewhere, but this ensures a
@@ -164,7 +164,7 @@ class Pretrainer:
         logger.debug(
             f"Collecting files (or symlinks) for pretraining in {self.collect_in}."
         )
-        self.collect_in.mkdir(exist_ok=True,parents=True)
+        self.collect_in.mkdir(exist_ok=True, parents=True)
         loadable_paths = {}
         for name in self.loadables:
             save_filename = name + PARAMFILE_EXT
@@ -179,7 +179,7 @@ class Pretrainer:
                     "and no default_source given!"
                 )
             path = fetch(
-                filename, source, self.collect_in, save_filename=save_filename
+                filename, source, self.collect_in, save_filename=save_filename, overwrite=overwrite
             )
             loadable_paths[name] = path
         return loadable_paths

@@ -290,10 +290,9 @@ class TimeDomainSpecAugment(torch.nn.Module):
             The waveforms to distort
         """
         # Augmentation
-        with torch.no_grad():
-            waveforms = self.speed_perturb(waveforms)
-            waveforms = self.drop_freq(waveforms)
-            waveforms = self.drop_chunk(waveforms, lengths)
+        waveforms = self.speed_perturb(waveforms)
+        waveforms = self.drop_freq(waveforms)
+        waveforms = self.drop_chunk(waveforms, lengths)
 
         return waveforms
 
@@ -414,16 +413,15 @@ class EnvCorrupt(torch.nn.Module):
             The waveforms to distort.
         """
         # Augmentation
-        with torch.no_grad():
-            if hasattr(self, "add_reverb"):
-                try:
-                    waveforms = self.add_reverb(waveforms, lengths)
-                except Exception:
-                    pass
-            if hasattr(self, "add_babble"):
-                waveforms = self.add_babble(waveforms, lengths)
-            if hasattr(self, "add_noise"):
-                waveforms = self.add_noise(waveforms, lengths)
+        if hasattr(self, "add_reverb"):
+            try:
+                waveforms = self.add_reverb(waveforms, lengths)
+            except Exception:
+                pass
+        if hasattr(self, "add_babble"):
+            waveforms = self.add_babble(waveforms, lengths)
+        if hasattr(self, "add_noise"):
+            waveforms = self.add_noise(waveforms, lengths)
 
         return waveforms
 

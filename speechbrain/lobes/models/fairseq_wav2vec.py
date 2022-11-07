@@ -163,7 +163,6 @@ class FairseqWav2Vec2(nn.Module):
         if self.freeze:
             with torch.no_grad():
                 return self.extract_features(wav).detach()
-
         return self.extract_features(wav)
 
     def extract_features(self, wav):
@@ -252,7 +251,7 @@ class FairseqWav2Vec1(nn.Module):
         self.model = model
         self.model = self.model[0]
         if self.freeze:
-            model.eval()
+            self.model.eval()
 
         # Randomly initialized layers if pretrain is False
         if not (pretrain):
@@ -276,15 +275,12 @@ class FairseqWav2Vec1(nn.Module):
 
     def extract_features(self, wav):
         """Extracts the wav2vect embeddings"""
-
         out = self.model.feature_extractor(wav)
         out = self.model.feature_aggregator(out)
         out = out.transpose(2, 1)
-
         # We normalize the output if required
         if self.output_norm:
             out = F.layer_norm(out, out.shape)
-
         return out
 
     def reset_layer(self, model):

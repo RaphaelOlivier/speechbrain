@@ -278,7 +278,7 @@ class FairseqWav2Vec1(nn.Module):
         """Extracts the wav2vect embeddings"""
 
         out = self.model.feature_extractor(wav)
-        out = self.model.feature_aggregator(out).squeeze(0)
+        out = self.model.feature_aggregator(out)
         out = out.transpose(2, 1)
 
         # We normalize the output if required

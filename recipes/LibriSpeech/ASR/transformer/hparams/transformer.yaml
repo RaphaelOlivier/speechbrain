@@ -49,7 +49,7 @@ ckpt_interval_minutes: 30 # save checkpoint every N min
 # Please, set your parameters accordingly.
 number_of_epochs: 60
 batch_size: 32 # This works for 1x GPU with 40GB
-ctc_weight: 0.3
+ctc_weight: 1.0
 grad_accumulation_factor: 2
 max_grad_norm: 5.0
 loss_reduction: 'batchmean'
@@ -111,7 +111,7 @@ valid_search_interval: 10
 valid_beam_size: 10
 test_beam_size: 66
 lm_weight: 0.60
-ctc_weight_decode: 0.40
+ctc_weight_decode: 1.0
 
 ############################## models ################################
 

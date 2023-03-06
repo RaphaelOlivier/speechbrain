@@ -600,6 +600,7 @@ class CategoricalEncoder:
                 "This is normal if there is e.g. an unk label defined at init."
             )
         lab2ind, ind2lab, extras = self._load_literal(path)
+        print(lab2ind, ind2lab, extras, path)
         self.lab2ind = lab2ind
         self.ind2lab = ind2lab
         self._set_extras(extras)
@@ -724,6 +725,7 @@ class CategoricalEncoder:
                 key = ast.literal_eval(literal_key)
                 value = ast.literal_eval(literal_value)
                 extras[key] = value
+        #assert False
         return lab2ind, ind2lab, extras
 
 

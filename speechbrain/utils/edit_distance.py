@@ -486,7 +486,7 @@ def wer_details_by_utterance(
                 else False,  # This also works for e.g. torch tensors
                 "num_edits": sum(ops.values()),
                 "num_ref_tokens": len(ref_tokens),
-                "WER": 100.0 * sum(ops.values()) / len(ref_tokens),
+                "WER": 100.0 * sum(ops.values()) / max(1,len(ref_tokens)),
                 "insertions": ops["insertions"],
                 "deletions": ops["deletions"],
                 "substitutions": ops["substitutions"],
@@ -555,7 +555,7 @@ def wer_summary(details_by_utterance):
         if dets["hyp_absent"]:
             num_absent_sents += 1
     wer_details = {
-        "WER": 100.0 * num_edits / num_scored_tokens,
+        "WER": 100.0 * num_edits / max(1,num_scored_tokens),
         "SER": 100.0 * num_erraneous_sents / num_scored_sents,
         "num_edits": num_edits,
         "num_scored_tokens": num_scored_tokens,

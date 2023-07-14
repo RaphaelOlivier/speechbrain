@@ -22,6 +22,11 @@ except ImportError:
     MSG += "E.G. run: pip install fairseq"
     raise ImportError(MSG)
 
+import sys
+sys.path.append("/home/rolivier/workspace/libs/fairseq/examples/data2vec")
+sys.path.append("/home/rolivier/workspace/libs/fairseq/examples/")
+sys.path.append("/home/rolivier/workspace/libs/fairseq/")
+from models import data2vec2
 
 class FairseqWav2Vec2(nn.Module):
     """This lobe enables the integration of fairseq pretrained wav2vec2.0 models.
@@ -100,14 +105,17 @@ class FairseqWav2Vec2(nn.Module):
             }
         else:
             overrides = {}
-        overrides["feature_grad_mult"] = 1.0
-        (
-            model,
-            cfg,
-            task,
-        ) = fairseq.checkpoint_utils.load_model_ensemble_and_task(
-            [save_path], arg_overrides=overrides
-        )
+            overrides["feature_grad_mult"] = 1.0
+        try:
+            (
+                model,
+                cfg,
+                task,
+            ) = fairseq.checkpoint_utils.load_model_ensemble_and_task(
+                [save_path], arg_overrides=overrides
+            )
+        except KeyError:
+            raise ImportError("The model could not be loaded. This may be due to some fairseq models (e.g. Data2Vec2) being unregistered in certain fairseq versions. You can fix this error by registering them manually, for instance 'sys.path.append('path/to/fairseq/examples/data2vec'); from models import data2vec2' ")
 
         # wav2vec pretrained models may need the input waveform to be normalized
         # Hence, we check if the model has be trained with or without it.
@@ -172,7 +180,11 @@ class FairseqWav2Vec2(nn.Module):
             wav = F.layer_norm(wav, wav.shape)
         # Extract wav2vec output
         out = self.model.extract_features(
-            wav, padding_mask=None, mask=False)['x']
+            wav, padding_mask=None, mask=False)
+        if isinstance(out,tuple):
+            out=out[0]
+        if isinstance(out,dict):
+            out=out['x']
         # We normalize the output if required
         if self.output_norm:
             out = F.layer_norm(out, out.shape)

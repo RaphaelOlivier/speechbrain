@@ -555,8 +555,8 @@ def wer_summary(details_by_utterance):
         if dets["hyp_absent"]:
             num_absent_sents += 1
     wer_details = {
-        "WER": 100.0 * num_edits / num_scored_tokens,
-        "SER": 100.0 * num_erraneous_sents / num_scored_sents,
+        "WER": 100.0 * num_edits / max(num_scored_tokens, 1),
+        "SER": 100.0 * num_erraneous_sents / max(num_scored_sents, 1),
         "num_edits": num_edits,
         "num_scored_tokens": num_scored_tokens,
         "num_erraneous_sents": num_erraneous_sents,
